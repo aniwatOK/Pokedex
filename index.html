@@ -1,0 +1,60 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div class="container mx-auto mt-5">
+        <h1 class="text-5xl font-bold mb-5">Pokedex Lab</h1>
+        <div class="flex w-full flex-col">
+            <div class="divider divider-primary"></div>
+          </div>
+        <div id="name" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5"></div>
+        <div class="flex w-full flex-col">
+            <div class="divider divider-primary"></div>
+          </div>
+        <div class="text-center mt-5">
+            <button id="show-more" class="btn btn-primary">Show More</button>
+        </div>
+    </div>
+    <script>
+        let offset = 0;
+        const limit = 20;
+
+        function loadPokemon(offset, limit) {
+            fetch(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`)
+                .then((res) => res.json())
+                .then((data) => {
+                    const datas = data["results"];
+                    const ele = document.getElementById("name");
+                    datas.forEach((element, index) => {
+                        const imgURL = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${offset + index + 1}.png`;
+                        ele.innerHTML += `
+                            <div class="card bg-base-100 shadow-xl">
+                                <figure class="px-10 pt-10">
+                                    <img src="${imgURL}" alt="${element["name"]}" class="w-32 h-32 lg:w-48 lg:h-48 rounded-xl">
+                                </figure>
+                                <div class="card-body items-center text-center">
+                                    <h2 class="card-title">${element["name"].charAt(0).toUpperCase() + element["name"].slice(1)}</h2>
+                                    <div class="card-actions">
+                                        <button class="btn btn-primary">More</button>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                })
+                .catch((err) => console.error(err));
+        }
+
+        document.getElementById('show-more').addEventListener('click', () => {
+            offset += limit;
+            loadPokemon(offset, limit);
+        });
+
+        // Initial load
+        loadPokemon(offset, limit);
+    </script>
+</body>
+</html>
