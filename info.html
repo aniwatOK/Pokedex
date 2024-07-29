@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cyberpunk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokémon Info</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.10/dist/full.min.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <div class="container mx-auto mt-5">
+        <h1 class="text-5xl font-bold mb-5 text-center" id="pokemon-name">Pokémon Info
+        </h1>
+        <div class="flex w-full flex-col">
+            <div class="divider divider-primary"></div>
+        </div>
+        <div id="pokemon-info" class="card bg-base-100 shadow-xl mx-auto w-full max-w-lg">
+            <figure class="px-10 pt-10">
+                <img id="pokemon-image" src="" alt="Pokémon Image" class="w-64 h-64 rounded-xl">
+            </figure>
+            <div class="card-body items-center text-center">
+                <h2 class="card-title" id="pokemon-title"></h2>
+                <p id="pokemon-height" class="mt-4"></p>
+                <p id="pokemon-weight" class="mt-4"></p>
+                <div id="pokemon-types" class="mt-4">Type : </div>
+                <div id="pokemon-stats" class=" mt-4"></div>
+                <div id="pokemon-abilities" class="mt-4">Abilities : </div>
+                <div class="card-actions mt-4">
+                    <a href="index.html">
+                        <button class="btn btn-primary">Home</button>
+                    </a>
+                    <button onclick="window.history.back()" class="btn btn-primary">Go Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const pokemonId = urlParams.get('id');
+
+            if (pokemonId) {
+                fetch(`https://pokeapi.co/api/v2/pokemon/${pokemonId}`)
+                    .then(response => response.json())
+                    .then(pokemon => {
+                        if (pokemon) {
+                            document.getElementById('pokemon-name').textContent = capitalize(pokemon.name);
+                            document.getElementById('pokemon-title').textContent = capitalize(pokemon.name);
+                            document.getElementById('pokemon-image').src = pokemon.sprites?.other['official-artwork']?.front_default || '';
+                            document.getElementById('pokemon-height').textContent = `Height : ${pokemon.height / 10} M`;
+                            document.getElementById('pokemon-weight').textContent = `Weight : ${pokemon.weight / 10} KG`;
+
+                            const statsContainer = document.getElementById('pokemon-stats');
+                            statsContainer.innerHTML = ''; 
+                            pokemon.stats?.forEach(statInfo => {
+                             const statElement = document.createElement('div');
+                             statElement.textContent = `${capitalize(statInfo.stat.name)}: ${statInfo.base_stat}`;
+                              statElement.classList.add('mb-1'); 
+                              statsContainer.appendChild(statElement);
+                             });
+
+                    if (pokemon.stats.length === 0) {
+                        statsContainer.textContent = 'No stats available';
+                    }
+
+                            const typesContainer = document.getElementById('pokemon-types');
+                            pokemon.types?.forEach(typeInfo => {
+                                const typeElement = document.createElement('a');
+                                typeElement.href = `type.html?id=${typeInfo.type.url.split('/').slice(-2, -1)[0]}`;
+                                typeElement.textContent = capitalize(typeInfo.type.name);
+                                typeElement.classList.add('text-blue-500', 'hover:underline', 'mr-2');
+                                typesContainer.appendChild(typeElement);
+                            });
+
+                            const abilitiesContainer = document.getElementById('pokemon-abilities');
+                            pokemon.abilities?.forEach(abilityInfo => {
+                                const abilityElement = document.createElement('a');
+                                abilityElement.href = `ability.html?id=${abilityInfo.ability.url.split('/').slice(-2, -1)[0]}`;
+                                abilityElement.textContent = capitalize(abilityInfo.ability.name);
+                                abilityElement.classList.add('text-blue-500', 'hover:underline', 'mr-2');
+                                abilitiesContainer.appendChild(abilityElement);
+                            });
+                        } else {
+                            showError('Pokémon data is not available.');
+                        }
+                    })
+                    .catch(error => showError('Error fetching Pokémon data:', error));
+            } else {
+                showError('No Pokémon ID provided in the URL.');
+            }
+
+            function capitalize(str) {
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+
+            function showError(message) {
+                document.getElementById('pokemon-info').innerHTML = `<p class="text-center text-red-500">${message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
